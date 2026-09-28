@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoteForge — YouTube to Notes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Top Bar -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="logo">
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                    <rect width="28" height="28" rx="7" fill="url(#logoGrad)"/>
+                    <path d="M8 9h12M8 14h12M8 19h7" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+                    <circle cx="21" cy="19" r="2.5" fill="white" opacity="0.9"/>
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0" y1="0" x2="28" y2="28">
+                            <stop stop-color="#6366f1"/>
+                            <stop offset="1" stop-color="#a855f7"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="logo-text">NoteForge</span>
+            </div>
+        </div>
+        <div class="topbar-center">
+            <div class="url-input-wrapper">
+                <svg class="url-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M6.5 9.5a3 3 0 004.24 0l2.5-2.5a3 3 0 00-4.24-4.24l-1.2 1.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M9.5 6.5a3 3 0 00-4.24 0l-2.5 2.5a3 3 0 004.24 4.24l1.2-1.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input type="text" id="youtubeUrl" class="url-input" placeholder="Paste YouTube URL here..." autocomplete="off">
+                <button id="loadVideoBtn" class="btn btn-primary btn-load">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 1.5l9 5.5-9 5.5v-11z" fill="currentColor"/></svg>
+                    Load
+                </button>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <button id="themeToggle" class="icon-btn" title="Toggle theme">
+                <svg class="icon-sun" width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.3 3.3l1.4 1.4M13.3 13.3l1.4 1.4M3.3 14.7l1.4-1.4M13.3 4.7l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <svg class="icon-moon" width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M16 10.5A7 7 0 117.5 2a5.5 5.5 0 008.5 8.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </button>
+            <button id="exportBtn" class="btn btn-ghost" title="Export notes">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11v2a1 1 0 001 1h8a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Export
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Split Screen -->
+    <main class="split-screen">
+        <!-- Left: YouTube Player -->
+        <section class="panel panel-video">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 6.5l3.5 2-3.5 2v-4z" fill="currentColor"/></svg>
+                    Video Player
+                </div>
+                <div class="video-actions">
+                    <button id="fetchTranscriptBtn" class="btn btn-accent btn-sm" disabled>
+                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 3h11M1 6.5h11M1 10h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                        Get Transcript
+                    </button>
+                </div>
+            </div>
+            <div class="video-container" id="videoContainer">
+                <div class="video-placeholder" id="videoPlaceholder">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                        <rect width="64" height="64" rx="16" fill="url(#phGrad)"/>
+                        <path d="M26 20l18 12-18 12V20z" fill="white" opacity="0.9"/>
+                        <defs><linearGradient id="phGrad" x1="0" y1="0" x2="64" y2="64"><stop stop-color="#6366f1"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+                    </svg>
+                    <p class="placeholder-text">Paste a YouTube URL above to get started</p>
+                    <p class="placeholder-sub">Transcript will appear here for note generation</p>
+                </div>
+                <div id="player"></div>
+            </div>
+            <!-- Transcript Panel -->
+            <div class="transcript-panel" id="transcriptPanel">
+                <div class="transcript-header">
+                    <span class="transcript-title">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2h10M2 5h10M2 8h6M2 11h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                        Transcript
+                    </span>
+                    <span class="transcript-status" id="transcriptStatus"></span>
+                </div>
+                <div class="transcript-content" id="transcriptContent">
+                    <p class="transcript-empty">Load a video and click "Get Transcript" to extract captions</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="divider" id="divider">
+            <div class="divider-handle">
+                <svg width="12" height="20" viewBox="0 0 12 20" fill="none"><path d="M3 6l-3 4 3 4M9 6l3 4-3 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+        </div>
+
+        <!-- Right: Notes Panel -->
+        <section class="panel panel-notes">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 1.5h7L13 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V2.5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 1.5v3h3M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    Smart Notes
+                </div>
+                <div class="notes-actions">
+                    <button id="generateNotesBtn" class="btn btn-accent btn-sm" disabled>
+                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v3M6.5 9v3M1 6.5h3M9 6.5h3M2.8 2.8l2 2M8.2 8.2l2 2M2.8 10.2l2-2M8.2 4.8l2-2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                        Generate Notes
+                    </button>
+                    <button id="clearNotesBtn" class="btn btn-ghost btn-sm">
+                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M5 3.5V2h3v1.5M3.5 3.5l.5 8a1 1 0 001 .5h4a1 1 0 001-.5l.5-8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Note Title -->
+            <div class="note-title-wrapper">
+                <input type="text" id="noteTitle" class="note-title-input" placeholder="Untitled Note" value="">
+            </div>
+
+            <!-- Toolbar -->
+            <div class="editor-toolbar">
+                <button class="tool-btn" data-action="bold" title="Bold"><strong>B</strong></button>
+                <button class="tool-btn" data-action="italic" title="Italic"><em>I</em></button>
+                <button class="tool-btn" data-action="underline" title="Underline"><u>U</u></button>
+                <span class="tool-sep"></span>
+                <button class="tool-btn" data-action="h1" title="Heading 1">H1</button>
+                <button class="tool-btn" data-action="h2" title="Heading 2">H2</button>
+                <button class="tool-btn" data-action="h3" title="Heading 3">H3</button>
+                <span class="tool-sep"></span>
+                <button class="tool-btn" data-action="ul" title="Bullet List">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="2" cy="3" r="1" fill="currentColor"/><circle cx="2" cy="7" r="1" fill="currentColor"/><circle cx="2" cy="11" r="1" fill="currentColor"/><path d="M5 3h7M5 7h7M5 11h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                </button>
+                <button class="tool-btn" data-action="ol" title="Numbered List">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3h7M5 7h7M5 11h7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><text x="0" y="4" font-size="5" fill="currentColor">1</text><text x="0" y="8" font-size="5" fill="currentColor">2</text><text x="0" y="12" font-size="5" fill="currentColor">3</text></svg>
+                </button>
+                <button class="tool-btn" data-action="checklist" title="Checklist">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 7l2 2 4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <span class="tool-sep"></span>
+                <button class="tool-btn" data-action="quote" title="Quote">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3h4v4c0 2-1 3-2 3.5M8 3h4v4c0 2-1 3-2 3.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="tool-btn" data-action="code" title="Code">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M4.5 4L2 6.5 4.5 9M9.5 4L12 6.5 9.5 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="tool-btn" data-action="divider" title="Divider">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                </button>
+                <span class="tool-sep"></span>
+                <button class="tool-btn" data-action="timestamp" title="Insert Timestamp">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 4v3l2 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+
+            <!-- Editor -->
+            <div class="editor-wrapper">
+                <div id="editor" class="editor" contenteditable="true" data-placeholder="Start writing your notes here, or click 'Generate Notes' to auto-create from transcript..."></div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <span id="wordCount">0 words</span>
+                <span class="status-sep">·</span>
+                <span id="charCount">0 chars</span>
+                <span class="status-sep">·</span>
+                <span id="saveStatus">Ready</span>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
